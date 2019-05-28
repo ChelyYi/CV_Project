@@ -6,6 +6,7 @@ __pycache__/
 # directory
 data/
 model/
+.idea/
 
 #other
 *.xml
