@@ -5,6 +5,11 @@ __pycache__/
 
 # directory
 data/
+model/
+
+#other
+*.xml
+*.iml
 
 # C extensions
 *.so
