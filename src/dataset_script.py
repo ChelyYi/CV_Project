@@ -7,7 +7,7 @@ from skimage.transform import resize
 # parameters that you should set before running this script
 filter = ['aeroplane', 'car', 'chair', 'dog', 'bird']       # select class, this default should yield 1489 training and 1470 validation images
 voc_root_folder = "../data/"  # please replace with the location on your laptop where you unpacked the tarball
-image_size = 214    # image size that you will use for your network (input images will be resampled to this size), lower if you have troubles on your laptop (hint: use io.imshow to inspect the quality of the resampled images before feeding it into your network!)
+image_size = 256    # image size that you will use for your network (input images will be resampled to this size), lower if you have troubles on your laptop (hint: use io.imshow to inspect the quality of the resampled images before feeding it into your network!)
 
 
 # step1 - build list of filtered filenames
