@@ -3,6 +3,9 @@ import numpy as np
 import os
 from skimage import io
 from skimage.transform import resize
+from sklearn.model_selection import train_test_split
+
+import matplotlib.pyplot as plot
 
 # parameters that you should set before running this script
 filter = ['aeroplane', 'car', 'chair', 'dog', 'bird']       # select class, this default should yield 1489 training and 1470 validation images
@@ -18,13 +21,6 @@ for a_f in annotation_files:
     tree = etree.parse(os.path.join(annotation_folder, a_f))
     if np.any([tag.text == filt for tag in tree.iterfind(".//name") for filt in filter]):
         filtered_filenames.append(a_f[:-4])
-
-# step2 - build (x,y) for TRAIN/VAL (classification)
-classes_folder = os.path.join(voc_root_folder, "VOC2009/ImageSets/Main/")
-classes_files = os.listdir(classes_folder)
-train_files = [os.path.join(classes_folder, c_f) for filt in filter for c_f in classes_files if filt in c_f and '_train.txt' in c_f]
-val_files = [os.path.join(classes_folder, c_f) for filt in filter for c_f in classes_files if filt in c_f and '_val.txt' in c_f]
-
 
 def build_classification_dataset(list_of_files):
     """ build training or validation set
@@ -55,21 +51,94 @@ def build_classification_dataset(list_of_files):
 
     return x, y
 
+def get_classification_dataset():
+    # step2 - build (x,y) for TRAIN/VAL (classification)
+    classes_folder = os.path.join(voc_root_folder, "VOC2009/ImageSets/Main/")
+    classes_files = os.listdir(classes_folder)
+    train_files = [os.path.join(classes_folder, c_f) for filt in filter for c_f in classes_files if
+                   filt in c_f and '_train.txt' in c_f]
+    val_files = [os.path.join(classes_folder, c_f) for filt in filter for c_f in classes_files if
+                 filt in c_f and '_val.txt' in c_f]
 
-x_train, y_train = build_classification_dataset(train_files)
-print('%i training images from %i classes' %(x_train.shape[0], y_train.shape[1]))
-print(x_train.shape)
-print(y_train.shape)
-np.save('../data/x_train.npy', x_train)
-np.save('../data/y_train.npy', y_train)
+    x_train, y_train = build_classification_dataset(train_files)
+    print('%i training images from %i classes' % (x_train.shape[0], y_train.shape[1]))
+    print(x_train.shape)
+    print(y_train.shape)
+    np.save('../data/x_train.npy', x_train)
+    np.save('../data/y_train.npy', y_train)
 
-x_val, y_val = build_classification_dataset(val_files)
-print('%i validation images from %i classes' %(x_val.shape[0],  y_val.shape[1]))
-print(x_val.shape)
-print(y_val.shape)
-np.save('../data/x_val.npy', x_val)
-np.save('../data/y_val.npy', y_val)
+    x_val, y_val = build_classification_dataset(val_files)
+    print('%i validation images from %i classes' % (x_val.shape[0], y_val.shape[1]))
+    print(x_val.shape)
+    print(y_val.shape)
+    np.save('../data/x_val.npy', x_val)
+    np.save('../data/y_val.npy', y_val)
 
-# from here, you can start building your model
-# you will only need x_train and x_val for the autoencoder
-# you should extend the above script for the segmentation task (you will need a slightly different function for building the label images)
+def build_segmentation_dataset(seg_file):
+    """ build training or validation set for segmentation
+
+    :param seg_file: filenames to build segmentation dataset
+    :return: tuple with training data x np.ndarray of shape (n_images, image_size, image_size, 3) and
+            segmentation result y np.ndarray of shape (n_images, image_size, image_size, 3)
+    """
+
+    with open(seg_file) as file:
+        lines = file.read().splitlines()
+        train_filter = [line.strip() for line in lines]
+
+    image_folder = os.path.join(voc_root_folder, "VOC2009/JPEGImages/")
+    image_filenames = [os.path.join(image_folder, file) for f in train_filter for file in os.listdir(image_folder) if
+                       f in file]
+    x = np.array([resize(io.imread(img_f), (image_size, image_size, 3)) for img_f in image_filenames]).astype(
+        'float32')
+
+    seg_folder = os.path.join(voc_root_folder, "VOC2009/SegmentationClass/")
+    image_filenames = [os.path.join(seg_folder, file) for f in train_filter for file in os.listdir(seg_folder) if
+                       f in file]
+    y = np.array([resize(io.imread(img_f), (image_size, image_size, 3)) for img_f in image_filenames]).astype('float32')
+
+    return x, y
+
+def get_segmentation_dataset():
+    train_file = os.path.join(voc_root_folder, "VOC2009/ImageSets/Segmentation/train.txt")
+    x_train, y_train = build_segmentation_dataset(train_file)
+    print('%i training images number' % (x_train.shape[0]))
+    print(x_train.shape)
+    print(y_train.shape)
+    np.save('../data/seg/x_seg_train.npy', x_train)
+    np.save('../data/seg/y_seg_train.npy', y_train)
+
+    val_file = os.path.join(voc_root_folder, "VOC2009/ImageSets/Segmentation/val.txt")
+    x_val, y_val = build_segmentation_dataset(val_file)
+    print('%i validation images number' % (x_val.shape[0]))
+    print(x_val.shape)
+    print(y_val.shape)
+    np.save('../data/seg/x_seg_val.npy', x_val)
+    np.save('../data/seg/y_seg_val.npy', y_val)
+
+def get_split_segmentation_dataset():
+    train_file = os.path.join(voc_root_folder, "VOC2009/ImageSets/Segmentation/trainval.txt")
+    x, y = build_segmentation_dataset(train_file)
+    x_train,x_val,y_train,y_val = train_test_split(x,y,test_size=0.2,random_state=10)
+    print('%i training images number' % (x_train.shape[0]))
+    print(x_train.shape)
+    print(y_train.shape)
+    plot.imshow(x_train[10])
+    plot.show()
+    plot.imshow(y_train[10])
+    plot.show()
+    np.save('../data/x_seg_train.npy', x_train)
+    np.save('../data/y_seg_train.npy', y_train)
+
+    print('%i validation images number' % (x_val.shape[0]))
+    print(x_val.shape)
+    print(y_val.shape)
+    plot.imshow(x_val[10])
+    plot.show()
+    plot.imshow(y_val[10])
+    plot.show()
+    np.save('../data/x_seg_val.npy', x_val)
+    np.save('../data/y_seg_val.npy', y_val)
+
+if __name__ == '__main__':
+    get_split_segmentation_dataset()
