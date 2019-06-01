@@ -142,8 +142,8 @@ def get_segmentation_dataset():
     print('%i validation images number' % (x_val.shape[0]))
     print(x_val.shape)
     print(y_val.shape)
-    np.save('../data/seg/x_seg_val_.npy', x_val)
-    np.save('../data/seg/y_seg_val_.npy', y_val)
+    np.save('../data/seg/x_seg_val.npy', x_val)
+    np.save('../data/seg/y_seg_val.npy', y_val)
 
 def get_split_segmentation_dataset():
     train_file = os.path.join(voc_root_folder, "VOC2009/ImageSets/Segmentation/trainval.txt")
@@ -152,15 +152,15 @@ def get_split_segmentation_dataset():
     print('%i training images number' % (x_train.shape[0]))
     print(x_train.shape)
     print(y_train.shape)
-    np.save('../data/x_seg_train_.npy', x_train)
-    np.save('../data/y_seg_train_.npy', y_train)
+    np.save('../data/x_seg_train.npy', x_train)
+    np.save('../data/y_seg_train.npy', y_train)
 
     print('%i validation images number' % (x_val.shape[0]))
     print(x_val.shape)
     print(y_val.shape)
-    np.save('../data/x_seg_val_.npy', x_val)
-    np.save('../data/y_seg_val_.npy', y_val)
+    np.save('../data/x_seg_val.npy', x_val)
+    np.save('../data/y_seg_val.npy', y_val)
 
 
 if __name__ == '__main__':
-    get_split_segmentation_dataset()
+    get_segmentation_dataset()
