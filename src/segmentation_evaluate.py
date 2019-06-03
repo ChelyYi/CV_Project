@@ -7,8 +7,13 @@ def mean_iu(predict,gt):
     :return: mean iu value
     """
     iu = 0
-    class_num = np.unique(predict).shape[0] # classes number in predict result
-    for c in range(1,class_num): # 20 classes
+    classes = np.unique(predict)# classes in predict result
+    class_num = classes.shape[0]
+    if class_num == 1: # only background
+        return 0.0
+    for c in classes:
+        if c == 0: # skip background class
+            continue
         p_ii =element_wise_same(predict,gt,c)
         t_i = np.count_nonzero(gt == c)
         p_ij = np.count_nonzero(predict == c)
